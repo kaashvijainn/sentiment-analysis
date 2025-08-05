@@ -22,6 +22,11 @@ try:
 except LookupError:
     nltk.download('stopwords')
 
+try:
+    nltk.data.find('corpora/wordnet')
+except LookupError:
+    nltk.download('wordnet')
+
 class BankruptcyAwareFinBERTAnalyzer:
 
     def __init__(self):
@@ -869,4 +874,5 @@ if __name__ == "__main__":
         print("🎯 Optimized to classify negative companies accurately")
 
         print("📚 Use analyzer.analyze_text(your_mda_text) to analyze your 10-K sections.")
+
 
