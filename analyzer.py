@@ -12,9 +12,15 @@ from transformers import AutoTokenizer, AutoModelForSequenceClassification
 import warnings
 warnings.filterwarnings('ignore')
 
-nltk.download('punkt')
-nltk.download('stopwords')
-nltk.download('wordnet')
+try:
+    nltk.data.find('tokenizers/punkt')
+except LookupError:
+    nltk.download('punkt')
+
+try:
+    nltk.data.find('corpora/stopwords')
+except LookupError:
+    nltk.download('stopwords')
 
 class BankruptcyAwareFinBERTAnalyzer:
 
@@ -863,3 +869,4 @@ if __name__ == "__main__":
         print("🎯 Optimized to classify negative companies accurately")
 
         print("📚 Use analyzer.analyze_text(your_mda_text) to analyze your 10-K sections.")
+
