@@ -6,6 +6,7 @@ from plotly.subplots import make_subplots
 import numpy as np
 from datetime import datetime, timedelta
 from analyzer import BankruptcyAwareFinBERTAnalyzer  
+from plotly.subplots import make_subplots
 
 # Configure page
 st.set_page_config(
@@ -85,45 +86,60 @@ def load_analyzer():
         return None
 
 def get_company_news(company_name, num_articles=5):
-    """Fetch recent news about the company (placeholder - mock data)"""
-    mock_news = [
-        {
-            'title': f'{company_name} Reports Q3 Financial Results',
-            'description': 'Company announces quarterly earnings with mixed results, showing declining revenues but improved cost management strategies...',
-            'url': 'https://example.com/news1',
-            'publishedAt': '2024-01-15T10:30:00Z',
-            'source': 'Financial Times'
-        },
-        {
-            'title': f'{company_name} Announces Strategic Restructuring Plan',
-            'description': 'Management outlines comprehensive business transformation plan including store closures and workforce reduction...',
-            'url': 'https://example.com/news2',
-            'publishedAt': '2024-01-10T14:20:00Z',
-            'source': 'Bloomberg'
-        },
-        {
-            'title': f'{company_name} Stock Analysis: Credit Rating Concerns',
-            'description': 'Market analysts express concerns about liquidity position and covenant compliance as company faces headwinds...',
-            'url': 'https://example.com/news3',
-            'publishedAt': '2024-01-08T09:15:00Z',
-            'source': 'Reuters'
-        },
-        {
-            'title': f'{company_name} Working with Financial Advisors',
-            'description': 'Sources indicate company has engaged investment banking advisors to explore strategic alternatives...',
-            'url': 'https://example.com/news4',
-            'publishedAt': '2024-01-05T16:45:00Z',
-            'source': 'Wall Street Journal'
-        },
-        {
-            'title': f'{company_name} Q2 Earnings Call Highlights Challenges',
-            'description': 'CEO discusses ongoing operational challenges including supply chain disruption and competitive pressures...',
-            'url': 'https://example.com/news5',
-            'publishedAt': '2024-01-03T11:20:00Z',
-            'source': 'MarketWatch'
-        }
-    ]
-    return mock_news[:num_articles]
+    """Fetch recent news about the company (hardcoded mock data for each)"""
+
+    all_news = {
+        'Ascena Retail Group': [
+            {
+                'title': 'Ascena Retail Group Reports Q3 Financial Results',
+                'description': 'Company announces quarterly earnings with mixed results...',
+                'url': 'https://www.businessoffashion.com/organisations/ascena-retail-group/',
+                'publishedAt': '2024-01-15T10:30:00Z',
+                'source': 'Business of Fashion'
+            },
+            {
+                'title': 'Ascena Retail Group Announces Strategic Restructuring Plan',
+                'description': 'Store closures and workforce reduction ahead...',
+                'url': 'https://www.wealthmanagement.com/real-estate/ann-taylor-parent-goes-bankrupt-plans-to-shut-over-1-000-stores',
+                'publishedAt': '2024-01-10T14:20:00Z',
+                'source': 'Wealth Management'
+            },
+        ],
+        'American Apparel': [
+            {
+                'title': 'JCPenney Looks to Reinvent Itself in 2024',
+                'description': 'New CEO sets bold vision to reposition JCPenney in the retail market...',
+                'url': 'https://example.com/jcpenney-reinvention',
+                'publishedAt': '2024-02-01T09:30:00Z',
+                'source': 'Retail Dive'
+            },
+            {
+                'title': 'JCPenney Expands Partnership with Influencers',
+                'description': 'Brand taps into Gen Z and millennial demographics through social media campaigns...',
+                'url': 'https://example.com/jcpenney-influencers',
+                'publishedAt': '2024-01-25T12:00:00Z',
+                'source': 'AdWeek'
+            },
+        ],
+        'Bed, Bath and Beyond': [
+            {
+                'title': 'Macy\'s Announces Store Modernization Plan',
+                'description': 'Investing in in-store tech to enhance customer experience...',
+                'url': 'https://example.com/macys-modernization',
+                'publishedAt': '2024-01-28T08:45:00Z',
+                'source': 'CNBC'
+            },
+            {
+                'title': 'Macy\'s Holiday Season Performance Beats Expectations',
+                'description': 'Strong online sales drive growth despite economic pressures...',
+                'url': 'https://example.com/macys-holiday-sales',
+                'publishedAt': '2024-01-18T15:30:00Z',
+                'source': 'Forbes'
+            },
+        ]
+    }
+
+    return all_news.get(company_name, [])[:num_articles]
 
 # Mock company data for dropdown
 company_data = {
@@ -439,59 +455,67 @@ company_data = {
 }
 
 def create_sentiment_flow_chart(sentence_results):
-    """Create a flow chart showing sentiment progression through the document"""
+    """Create a combined sentiment and complexity chart for sentence-level analysis."""
     if not sentence_results:
         return None
-   
-    sentences = [f"Sentence {i+1}" for i in range(len(sentence_results))]
+
     sentiment_scores = [s['final_sentiment_score'] for s in sentence_results]
-    complexity_scores = [len(s['valence_shifters']) / max(1, s['word_count']) * 10 for s in sentence_results]
-   
+    complexity_scores = [
+        (len(s['valence_shifters']) / max(1, s['word_count'])) * 10
+        for s in sentence_results
+    ]
+    sentence_indices = list(range(1, len(sentence_results) + 1))
+    marker_colors = ['red' if score < 0 else 'green' if score > 0 else 'gray' for score in sentiment_scores]
+
     fig = make_subplots(
         rows=2, cols=1,
-        subplot_titles=('Sentiment Flow Throughout Document', 'Language Complexity by Sentence'),
-        vertical_spacing=0.1,
-        row_heights=[0.6, 0.4]
+        shared_xaxes=True,
+        vertical_spacing=0.04,
+        row_heights=[0.7, 0.3],
+        subplot_titles=[
+            "Sentiment Flow Throughout Document",
+            "Language Complexity by Sentence"
+        ]
     )
-   
-    colors = ['red' if score < 0 else 'green' if score > 0 else 'gray' for score in sentiment_scores]
+
     fig.add_trace(
         go.Scatter(
-            x=list(range(len(sentences))),
+            x=sentence_indices,
             y=sentiment_scores,
             mode='lines+markers',
-            name='Sentiment Score',
             line=dict(color='blue', width=2),
-            marker=dict(color=colors, size=8),
-            hovertemplate='Sentence %{x+1}<br>Sentiment: %{y:.3f}<extra></extra>'
+            marker=dict(color=marker_colors, size=8),
+            hovertemplate='Sentence %{x}<br>Sentiment: %{y:.3f}<extra></extra>',
+            name='Sentiment Score',
         ),
         row=1, col=1
     )
-   
+
     fig.add_hline(y=0, line_dash="dash", line_color="gray", row=1, col=1)
-   
+
     fig.add_trace(
         go.Bar(
-            x=list(range(len(sentences))),  
+            x=sentence_indices,
             y=complexity_scores,
-            name='Complexity Score',
             marker_color='orange',
-            hovertemplate='Sentence %{x+1}<br>Complexity: %{y:.2f}<extra></extra>'
+            hovertemplate='Sentence %{x}<br>Complexity: %{y:.2f}<extra></extra>',
+            name='Complexity Score',
         ),
         row=2, col=1
     )
-   
+
     fig.update_layout(
         height=600,
+        margin=dict(t=40, b=50, l=30, r=30),
         showlegend=False,
-        title_text="Document Analysis Flow"
     )
-   
+
     fig.update_xaxes(title_text="Sentence Number", row=2, col=1)
     fig.update_yaxes(title_text="Sentiment Score", row=1, col=1)
     fig.update_yaxes(title_text="Complexity", row=2, col=1)
-   
+
     return fig
+
 
 # def create_risk_indicator_chart(risk_indicators_by_category):
 #     """Create a pie chart showing risk indicators by category"""
@@ -670,36 +694,26 @@ def main():
        
         # Charts section
         st.subheader("Visual Analysis")
-       
+
         # First row of charts
         col_chart1, col_chart2 = st.columns(2)
-       
+
         with col_chart1:
             flow_chart = create_sentiment_flow_chart(result['sentence_details'])
             if flow_chart:
                 st.plotly_chart(flow_chart, use_container_width=True)
-       
+
         with col_chart2:
             complexity_gauge = create_complexity_gauge(result.get('sentiment_complexity_score', 0))
             st.plotly_chart(complexity_gauge, use_container_width=True)
-       
-        # Second row of charts
-        col_chart3, col_chart4 = st.columns(2)
-       
-        # with col_chart3:
-        #     risk_chart = create_risk_indicator_chart(result['risk_indicators_by_category'])
-        #     if risk_chart:
-        #         st.plotly_chart(risk_chart, use_container_width=True)
-        #     else:
-        #         st.info("No risk indicators found in the document.")
-       
-        with col_chart4:
-            readability_chart = create_readability_chart(result['readability_metrics'])
-            st.plotly_chart(readability_chart, use_container_width=True)
-       
+
+        # Second chart (readability) using full width since risk chart is removed
+        readability_chart = create_readability_chart(result['readability_metrics'])
+        st.plotly_chart(readability_chart, use_container_width=True)
+
         # Detailed analysis expandable sections
         st.subheader("Detailed Analysis")
-       
+
         # Risk breakdown
         with st.expander("Risk Indicators Breakdown", expanded=False):
             if any(result['risk_indicators_by_category'].values()):
@@ -712,46 +726,53 @@ def main():
                 st.dataframe(risk_df, use_container_width=True)
             else:
                 st.info("No risk indicators detected in this document.")
-       
-       
+
         # Document statistics
-        with st.expander("Document Statistics", expanded=False):
-            col_stat1, col_stat2, col_stat3 = st.columns(3)
-           
-            with col_stat1:
-                st.metric("Total Sentences", result['total_sentences_analyzed'])
-                st.metric("Risk Flagged Sentences", result['sentences_with_risk_flags'])
-           
-            with col_stat2:
-                st.metric("Economic Headwinds", result['sentences_with_economic_headwinds'])
-                st.metric("Valence Shifters", result['valence_shifter_frequency'])
-           
-            with col_stat3:
-                st.metric("Sentiment Std Dev", f"{result['sentiment_std']:.3f}")
-                st.metric("Sentiment Range", f"{result['sentiment_range']:.3f}")
+        # with st.expander("Document Statistics", expanded=False):
+        #     col_stat1, col_stat2, col_stat3 = st.columns(3)
+
+        #     with col_stat1:
+        #         st.metric("Total Sentences", result['total_sentences_analyzed'])
+        #         st.metric("Risk Flagged Sentences", result['sentences_with_risk_flags'])
+
+        #     with col_stat2:
+        #         st.metric("Economic Headwinds", result['sentences_with_economic_headwinds'])
+        #         st.metric("Valence Shifters", result['valence_shifter_frequency'])
+
+        #     with col_stat3:
+        #         st.metric("Sentiment Std Dev", f"{result['sentiment_std']:.3f}")
+        #         st.metric("Sentiment Range", f"{result['sentiment_range']:.3f}")
+
        
-        # # Company news section
-        # st.subheader(f"📰 Latest News: {company_name}")
-        # try:
-        #     news_articles = get_company_news(company_name)
-        #     for i, article in enumerate(news_articles):
-        #         with st.container():
-        #             col_news1, col_news2 = st.columns([3, 1])
-        #             with col_news1:
-        #                 st.markdown(f"**{article['title']}**")
-        #                 st.write(article['description'])
-        #                 st.caption(f"Source: {article['source']} | Published: {article['publishedAt'][:10]}")
-        #             with col_news2:
-        #                 if st.button(f"Read Article {i+1}", key=f"news_{i}"):
-        #                     st.write(f"[Open Article]({article['url']})")
-        #             st.divider()
-        # except Exception as e:
-        #     st.info("News feature requires API setup. Currently showing sample data for demonstration.")
+        st.title(" Company News Dashboard")
+
+        # # Dropdown to select company
+        # companies = ['Ascena Retail Group', 'American Apparel', "Bed, Bath and Beyond"]
+        # company_name = st.selectbox("Select a Company to View News", companies)
+
+        # Company news section (main area)
+        st.subheader(f"Latest News: {company_name}")
+
+        try:
+            news_articles = get_company_news(company_name)
+            for i, article in enumerate(news_articles):
+                with st.container():
+                    col_news1, col_news2 = st.columns([3, 1])
+                    with col_news1:
+                        st.markdown(f"**{article['title']}**")
+                        st.write(article['description'])
+                        st.caption(f"Source: {article['source']} | Published: {article['publishedAt'][:10]}")
+                    with col_news2:
+                        if st.button(f"Read Article {i+1}", key=f"news_{i}"):
+                            st.markdown(f"[Open Article]({article['url']})", unsafe_allow_html=True)
+                st.divider()
+        except Exception as e:
+            st.info("News feature requires API setup. Currently showing sample data for demonstration.")
    
     else:
         # Welcome message and instructions
         st.markdown("""
-        ## 🚀 Welcome to the Bankruptcy Risk Sentiment Analyzer
+        ##  Welcome to the Bankruptcy Risk Sentiment Analyzer
        
         This advanced AI-powered tool analyzes financial documents to detect bankruptcy risk signals and sentiment patterns using:
        
