@@ -22,7 +22,7 @@ st.markdown("""
         font-weight: bold;
         text-align: center;
         margin-bottom: 2rem;
-        background: linear-gradient(90deg, #FF6B6B, #4ECDC4);
+        background: black;
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
     }
@@ -493,33 +493,33 @@ def create_sentiment_flow_chart(sentence_results):
    
     return fig
 
-def create_risk_indicator_chart(risk_indicators_by_category):
-    """Create a pie chart showing risk indicators by category"""
-    if not any(risk_indicators_by_category.values()):
-        return None
+# def create_risk_indicator_chart(risk_indicators_by_category):
+#     """Create a pie chart showing risk indicators by category"""
+#     if not any(risk_indicators_by_category.values()):
+#         return None
    
-    categories = []
-    counts = []
-    colors = ['#FF6B6B', '#FF8E53', '#FF6B9D', '#4ECDC4', '#45B7D1']
+#     categories = []
+#     counts = []
+#     colors = ['#FF6B6B', '#FF8E53', '#FF6B9D', '#4ECDC4', '#45B7D1']
    
-    for category, count in risk_indicators_by_category.items():
-        if count > 0:
-            categories.append(category.replace('_', ' ').title())
-            counts.append(count)
+#     for category, count in risk_indicators_by_category.items():
+#         if count > 0:
+#             categories.append(category.replace('_', ' ').title())
+#             counts.append(count)
    
-    fig = go.Figure(data=[go.Pie(
-        labels=categories,
-        values=counts,
-        hole=0.4,
-        marker_colors=colors[:len(categories)]
-    )])
+#     fig = go.Figure(data=[go.Pie(
+#         labels=categories,
+#         values=counts,
+#         hole=0.4,
+#         marker_colors=colors[:len(categories)]
+#     )])
    
-    fig.update_layout(
-        title="Risk Indicators Distribution",
-        height=400
-    )
+#     fig.update_layout(
+#         title="Risk Indicators Distribution",
+#         height=400
+#     )
    
-    return fig
+#     return fig
 
 def create_complexity_gauge(complexity_score):
     """Create a gauge chart for complexity score"""
@@ -530,7 +530,7 @@ def create_complexity_gauge(complexity_score):
         title={'text': "Sentiment Complexity"},
         delta={'reference': 0.5},
         gauge={'axis': {'range': [None, 1]},
-               'bar': {'color': "darkblue"},
+               'bar': {'color': "green"},
                'steps': [
                    {'range': [0, 0.3], 'color': "lightgray"},
                    {'range': [0.3, 0.7], 'color': "yellow"},
@@ -569,7 +569,7 @@ def create_readability_chart(readability_metrics):
 
 def main():
     # Header
-    st.markdown('<h1 class="main-header">🏦 Bankruptcy Risk Sentiment Analyzer</h1>', unsafe_allow_html=True)
+    st.markdown('<h1 class="main-header">Bankruptcy Risk Sentiment Analyzer</h1>', unsafe_allow_html=True)
    
     # Load analyzer
     analyzer = load_analyzer()
@@ -686,12 +686,12 @@ def main():
         # Second row of charts
         col_chart3, col_chart4 = st.columns(2)
        
-        with col_chart3:
-            risk_chart = create_risk_indicator_chart(result['risk_indicators_by_category'])
-            if risk_chart:
-                st.plotly_chart(risk_chart, use_container_width=True)
-            else:
-                st.info("No risk indicators found in the document.")
+        # with col_chart3:
+        #     risk_chart = create_risk_indicator_chart(result['risk_indicators_by_category'])
+        #     if risk_chart:
+        #         st.plotly_chart(risk_chart, use_container_width=True)
+        #     else:
+        #         st.info("No risk indicators found in the document.")
        
         with col_chart4:
             readability_chart = create_readability_chart(result['readability_metrics'])
